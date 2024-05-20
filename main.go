@@ -5,6 +5,7 @@ import (
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
@@ -38,11 +39,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Do you want to create a new set of flashcards or use an existing set?\n"
+	s := ""
+	s += lipgloss.NewStyle().
+		SetString("Do you want to create a new set of flashcards or use an existing set?").
+		Foreground(lipgloss.Color("171")).
+		Bold(true).
+		String()
+	s += "\n" // add this separately from previous line to work better with lipgloss
 
 	choices := [2]string{
-		"Create a new set of flashcards",
-		"Use an existing set of flashcards",
+		lipgloss.NewStyle().
+			SetString("Create a new set of flashcards").
+			Foreground(lipgloss.Color("4")).
+			Italic(m.cursor == 0).
+			String(),
+		lipgloss.NewStyle().
+			SetString("Use an existing set of flashcards").
+			Foreground(lipgloss.Color("2")).
+			Italic(m.cursor == 1).
+			String(),
 	}
 
 	for i, choice := range choices {
