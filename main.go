@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -18,7 +19,9 @@ const (
 
 type model struct {
 	state  state
-	cursor int
+	cursor int    // initial state
+	name   string // create state
+	err    error  // create state
 }
 
 func (m model) Init() tea.Cmd {
@@ -52,7 +55,43 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "ctrl+c":
 				return m, tea.Quit
+
+			case "enter":
+				switch m.err {
+				case nil:
+					if len(m.name) <= 0 {
+						m.err = errors.New("Project name must be at least 1 character long")
+					}
+				// TODO: else create project
+				default:
+					m.err = nil
+					m.name = ""
+				}
+
+			case "backspace":
+				switch m.err {
+				case nil:
+					if len(m.name) > 0 {
+						m.name = m.name[:len(m.name)-1]
+					}
+				default:
+					m.err = nil
+					m.name = ""
+				}
+
+			default:
+				switch m.err {
+				case nil:
+					// Prevent things like "ctrl+a" from being appended to the name
+					if len(msg.String()) == 1 {
+						m.name += msg.String()
+					}
+				default:
+					m.err = nil
+					m.name = ""
+				}
 			}
+
 		case existing:
 			switch msg.String() {
 			case "ctrl+c":
@@ -98,10 +137,36 @@ func (m model) View() string {
 		}
 		return s
 
-	// TODO:
 	case create:
-		return "Create a new set of flashcards!"
+		s := ""
+		s += lipgloss.NewStyle().
+			SetString("CREATING A NEW SET OF FLASHCARDS").
+			Foreground(lipgloss.Color("4")).
+			Bold(true).
+			Italic(true).
+			String()
+		s += "\n"
 
+		s += lipgloss.NewStyle().
+			SetString("What do you want your project to be called?", m.name).
+			String()
+
+		if m.err != nil {
+			s += "\n"
+			s += lipgloss.NewStyle().
+				SetString(m.err.Error()).
+				Foreground(lipgloss.Color("1")).
+				Bold(true).
+				String()
+			s += "\n"
+			s += lipgloss.NewStyle().
+				SetString("(Press any key to retry)").
+				Faint(true).String()
+		}
+
+		return s
+
+	// TODO: set view for existing flashcards
 	case existing:
 		return "Use an existing set of flashcards!"
 	}
