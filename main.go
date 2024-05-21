@@ -8,8 +8,16 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type state int
+
+const (
+	initial state = iota
+	create
+	existing
+)
+
 type model struct {
-	step   int
+	state  state
 	cursor int
 }
 
@@ -20,18 +28,35 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Quit
+		switch m.state {
+		case initial:
+			switch msg.String() {
+			case "ctrl+c":
+				return m, tea.Quit
 
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
+			case "up", "k":
+				if m.cursor > 0 {
+					m.cursor--
+				}
+
+			case "down", "j":
+				if m.cursor < 1 {
+					m.cursor++
+				}
+
+			case "enter":
+				m.state = state(m.cursor + 1)
+				m.cursor = 0
 			}
-
-		case "down", "j":
-			if m.cursor < 1 {
-				m.cursor++
+		case create:
+			switch msg.String() {
+			case "ctrl+c":
+				return m, tea.Quit
+			}
+		case existing:
+			switch msg.String() {
+			case "ctrl+c":
+				return m, tea.Quit
 			}
 		}
 	}
@@ -39,37 +64,49 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := ""
-	s += lipgloss.NewStyle().
-		SetString("Do you want to create a new set of flashcards or use an existing set?").
-		Foreground(lipgloss.Color("171")).
-		Bold(true).
-		String()
-	s += "\n" // add this separately from previous line to work better with lipgloss
+	switch m.state {
+	case initial:
 
-	choices := [2]string{
-		lipgloss.NewStyle().
-			SetString("Create a new set of flashcards").
-			Foreground(lipgloss.Color("4")).
-			Italic(m.cursor == 0).
-			String(),
-		lipgloss.NewStyle().
-			SetString("Use an existing set of flashcards").
-			Foreground(lipgloss.Color("2")).
-			Italic(m.cursor == 1).
-			String(),
-	}
+		s := ""
+		s += lipgloss.NewStyle().
+			SetString("Do you want to create a new set of flashcards or use an existing set?").
+			Foreground(lipgloss.Color("171")).
+			Bold(true).
+			String()
+		s += "\n" // add this separately from previous line to work better with lipgloss
 
-	for i, choice := range choices {
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
+		choices := [2]string{
+			lipgloss.NewStyle().
+				SetString("Create a new set of flashcards").
+				Foreground(lipgloss.Color("4")).
+				Italic(m.cursor == 0).
+				String(),
+			lipgloss.NewStyle().
+				SetString("Use an existing set of flashcards").
+				Foreground(lipgloss.Color("2")).
+				Italic(m.cursor == 1).
+				String(),
 		}
 
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
+		for i, choice := range choices {
+			cursor := " "
+			if m.cursor == i {
+				cursor = ">"
+			}
+
+			s += fmt.Sprintf("%s %s\n", cursor, choice)
+		}
+		return s
+
+	// TODO:
+	case create:
+		return "Create a new set of flashcards!"
+
+	case existing:
+		return "Use an existing set of flashcards!"
 	}
 
-	return s
+	return "Something went wrong, please try again."
 }
 
 func main() {
