@@ -2,6 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"io/fs"
+	"log"
+	"path/filepath"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -26,6 +31,8 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 			case nil:
 				if len(c.name) <= 0 {
 					c.err = errors.New("Project name must be at least 1 character long")
+				} else if findProject("./", c.name) != nil {
+					c.err = fmt.Errorf("Project with name %v already exists", c.name)
 				}
 			// TODO: else create project
 			default:
@@ -92,4 +99,19 @@ func (c *create_model) ViewCreate() string {
 
 	return s
 
+}
+
+func findProject(root, name string) error {
+	return filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
+		if e != nil {
+			log.Fatal(e)
+			return e
+		}
+
+		if strings.TrimSuffix(d.Name(), ".db") == name {
+			return errors.New("Project already exists")
+		}
+
+		return nil
+	})
 }
