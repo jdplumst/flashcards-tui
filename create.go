@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,7 +31,9 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 			switch c.err {
 			case nil:
 				if len(c.name) <= 0 {
-					c.err = errors.New("Project name must be at least 1 character long")
+					c.err = fmt.Errorf("Project name must be at least 1 character long")
+				} else if !regexp.MustCompile(`^[A-Za-z]+$`).MatchString(c.name) {
+					c.err = fmt.Errorf("Project can only contain alphabetic characters")
 				} else if findProject("./", c.name) != nil {
 					c.err = fmt.Errorf("Project with name %v already exists", c.name)
 				}
