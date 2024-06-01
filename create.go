@@ -108,7 +108,7 @@ func findProject(root, name string) error {
 			return e
 		}
 
-		if strings.TrimSuffix(d.Name(), ".db") == name {
+		if strings.TrimSuffix(d.Name(), ".db") == strings.ToLower(name) {
 			return errors.New("Project already exists")
 		}
 
