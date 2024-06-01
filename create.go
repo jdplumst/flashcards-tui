@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -14,59 +15,81 @@ import (
 )
 
 type create_model struct {
-	name string
-	err  error
+	name    string
+	err     error
+	created bool
 }
 
 func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 	model_state := state(create)
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return tea.Quit, model_state
+	switch c.created {
+	case false:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "ctrl+c":
+				return tea.Quit, model_state
 
-		case "enter":
-			switch c.err {
-			case nil:
-				if len(c.name) <= 0 {
-					c.err = fmt.Errorf("Project name must be at least 1 character long")
-				} else if !regexp.MustCompile(`^[A-Za-z]+$`).MatchString(c.name) {
-					c.err = fmt.Errorf("Project can only contain alphabetic characters")
-				} else if findProject("./", c.name) != nil {
-					c.err = fmt.Errorf("Project with name %v already exists", c.name)
+			case "enter":
+				switch c.err {
+				case nil:
+					if len(c.name) <= 0 {
+						c.err = fmt.Errorf("Project name must be at least 1 character long")
+					} else if !regexp.MustCompile(`^[A-Za-z]+$`).MatchString(c.name) {
+						c.err = fmt.Errorf("Project can only contain alphabetic characters")
+					} else if findProject("./", c.name) != nil {
+						c.err = fmt.Errorf("Project with name %v already exists", c.name)
+					} else {
+						_, err := os.Create(c.name + ".db")
+						if err != nil {
+							log.Fatal(err)
+							c.err = fmt.Errorf("Something went wrong. Please try again.")
+						}
+						c.created = true
+					}
+				default:
+					c.err = nil
+					c.name = ""
 				}
-			// TODO: else create project
+
+			case "backspace":
+				switch c.err {
+				case nil:
+					if len(c.name) > 0 {
+						c.name = c.name[:len(c.name)-1]
+					}
+				default:
+					c.err = nil
+					c.name = ""
+				}
+
 			default:
-				c.err = nil
-				c.name = ""
+				switch c.err {
+				case nil:
+					// Prevent things like "ctrl+a" from being appended to the name
+					if len(msg.String()) == 1 {
+						c.name += msg.String()
+					}
+				default:
+					c.err = nil
+					c.name = ""
+				}
 			}
 
-		case "backspace":
-			switch c.err {
-			case nil:
-				if len(c.name) > 0 {
-					c.name = c.name[:len(c.name)-1]
-				}
-			default:
-				c.err = nil
-				c.name = ""
-			}
+		}
+	case true:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "ctrl+c":
+				return tea.Quit, model_state
 
-		default:
-			switch c.err {
-			case nil:
-				// Prevent things like "ctrl+a" from being appended to the name
-				if len(msg.String()) == 1 {
-					c.name += msg.String()
-				}
 			default:
-				c.err = nil
-				c.name = ""
+				return nil, 0
+
 			}
 		}
-
 	}
 
 	return nil, model_state
@@ -97,6 +120,19 @@ func (c *create_model) ViewCreate() string {
 		s += "\n"
 		s += lipgloss.NewStyle().
 			SetString("(Press any key to retry)").
+			Faint(true).String()
+	}
+
+	if c.created {
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("You have successfully created the project", c.name+"!").
+			Foreground(lipgloss.Color("4")).
+			Bold(true).
+			String()
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("(Press any key to continue)").
 			Faint(true).String()
 	}
 
