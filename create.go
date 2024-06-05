@@ -86,6 +86,9 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 				return tea.Quit, model_state
 
 			default:
+				c.created = false
+				c.name = ""
+				c.err = nil
 				return nil, 0
 
 			}
