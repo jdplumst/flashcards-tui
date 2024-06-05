@@ -15,9 +15,10 @@ const (
 )
 
 type model struct {
-	state   state
-	initial initial_model
-	create  create_model
+	state    state
+	initial  initial_model
+	create   create_model
+	existing existing_model
 }
 
 func (m model) Init() tea.Cmd {
@@ -37,15 +38,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case existing:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "ctrl+c":
-				return m, tea.Quit
-			}
-
-		}
+		cmd, s := m.existing.UpdateExisting(msg)
+		m.state = s
+		return m, cmd
 	}
+
 	return m, nil
 }
 
@@ -57,9 +54,8 @@ func (m model) View() string {
 	case create:
 		return m.create.ViewCreate()
 
-	// TODO: set view for existing flashcards
 	case existing:
-		return "Use an existing set of flashcards!"
+		return m.existing.ViewExisting()
 	}
 
 	return "Something went wrong, please try again."
