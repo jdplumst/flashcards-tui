@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -25,14 +26,39 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 			return tea.Quit, model_state
 
 		case "up", "k":
-			if e.cursor > 0 {
-				e.cursor--
+			switch e.err {
+			case nil:
+				if e.cursor > 0 {
+					e.cursor--
+				}
+			default:
+				e.err = nil
+				e.name = ""
+				e.cursor = 0
 			}
 
 		case "down", "j":
-			if e.cursor < len(findProjects())-1 {
-				e.cursor++
+			switch e.err {
+			case nil:
+				projects, err := findProjects()
+				if err != nil {
+					e.err = err
+				} else {
+					if e.cursor < len(projects)-1 {
+						e.cursor++
+					}
+				}
+			default:
+				e.err = nil
+				e.name = ""
+				e.cursor = 0
 			}
+		case "p":
+			e.err = errors.New("yo an error")
+		default:
+			e.err = nil
+			e.name = ""
+			e.cursor = 0
 		}
 	}
 
@@ -48,7 +74,18 @@ func (e *existing_model) ViewExisting() string {
 		String()
 	s += "\n"
 
-	projects := findProjects()
+	projects, err := findProjects()
+	if err != nil {
+		s += lipgloss.NewStyle().
+			SetString(err.Error()).
+			Foreground(lipgloss.Color("1")).
+			Bold(true).
+			String()
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("(Press any key to retry)").
+			Faint(true).String()
+	}
 
 	for idx, project := range projects {
 		x := "[ ] "
@@ -70,12 +107,24 @@ func (e *existing_model) ViewExisting() string {
 		s += "\n"
 	}
 
+	if e.err != nil {
+		s += lipgloss.NewStyle().
+			SetString(e.err.Error()).
+			Foreground(lipgloss.Color("1")).
+			Bold(true).
+			String()
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("(Press any key to retry)").
+			Faint(true).String()
+	}
+
 	return s
 }
 
-func findProjects() []string {
+func findProjects() ([]string, error) {
 	var a []string
-	filepath.WalkDir(".", func(s string, d fs.DirEntry, e error) error {
+	err := filepath.WalkDir(".", func(s string, d fs.DirEntry, e error) error {
 		if e != nil {
 			return e
 		}
@@ -84,5 +133,8 @@ func findProjects() []string {
 		}
 		return nil
 	})
-	return a
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
 }

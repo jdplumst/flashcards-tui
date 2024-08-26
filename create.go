@@ -43,7 +43,6 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 					} else {
 						_, err := os.Create(c.name + ".db")
 						if err != nil {
-							log.Fatal(err)
 							c.err = fmt.Errorf("Something went wrong. Please try again.")
 						}
 						c.created = true
