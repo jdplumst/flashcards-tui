@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -40,21 +39,16 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 		case "down", "j":
 			switch e.err {
 			case nil:
-				projects, err := findProjects()
-				if err != nil {
-					e.err = err
-				} else {
-					if e.cursor < len(projects)-1 {
-						e.cursor++
-					}
+				projects := e.findProjects()
+				if e.cursor < len(projects)-1 {
+					e.cursor++
+
 				}
 			default:
 				e.err = nil
 				e.name = ""
 				e.cursor = 0
 			}
-		case "p":
-			e.err = errors.New("yo an error")
 		default:
 			e.err = nil
 			e.name = ""
@@ -74,18 +68,7 @@ func (e *existing_model) ViewExisting() string {
 		String()
 	s += "\n"
 
-	projects, err := findProjects()
-	if err != nil {
-		s += lipgloss.NewStyle().
-			SetString(err.Error()).
-			Foreground(lipgloss.Color("1")).
-			Bold(true).
-			String()
-		s += "\n"
-		s += lipgloss.NewStyle().
-			SetString("(Press any key to retry)").
-			Faint(true).String()
-	}
+	projects := e.findProjects()
 
 	for idx, project := range projects {
 		x := "[ ] "
@@ -122,11 +105,11 @@ func (e *existing_model) ViewExisting() string {
 	return s
 }
 
-func findProjects() ([]string, error) {
+func (e *existing_model) findProjects() []string {
 	var a []string
-	err := filepath.WalkDir(".", func(s string, d fs.DirEntry, e error) error {
-		if e != nil {
-			return e
+	err := filepath.WalkDir(".", func(s string, d fs.DirEntry, fErr error) error {
+		if fErr != nil {
+			e.err = fErr
 		}
 		if filepath.Ext(d.Name()) == ".db" {
 			a = append(a, s)
@@ -134,7 +117,7 @@ func findProjects() ([]string, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		e.err = err
 	}
-	return a, nil
+	return a
 }
