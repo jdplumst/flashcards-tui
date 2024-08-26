@@ -107,17 +107,20 @@ func (e *existing_model) ViewExisting() string {
 
 func (e *existing_model) findProjects() []string {
 	var a []string
+
 	err := filepath.WalkDir(".", func(s string, d fs.DirEntry, fErr error) error {
 		if fErr != nil {
-			e.err = fErr
+			return fErr
 		}
 		if filepath.Ext(d.Name()) == ".db" {
 			a = append(a, s)
 		}
 		return nil
 	})
+
 	if err != nil {
 		e.err = err
 	}
+
 	return a
 }
