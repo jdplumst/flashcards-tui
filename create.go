@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -145,7 +144,6 @@ func (c *create_model) ViewCreate() string {
 func findProject(root, name string) error {
 	return filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
 		if e != nil {
-			log.Fatal(e)
 			return e
 		}
 
