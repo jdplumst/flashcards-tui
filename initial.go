@@ -26,12 +26,17 @@ func (i *initial_model) UpdateInitial(msg tea.Msg) (tea.Cmd, state) {
 			}
 
 		case "down", "j":
-			if i.cursor < 1 {
+			if i.cursor < 4 {
 				i.cursor++
 			}
 
 		case "enter":
-			model_state = state(i.cursor + 1)
+			switch i.cursor {
+			case 0:
+				model_state = state(create)
+			case 1, 2, 3, 4:
+				model_state = state(existing)
+			}
 			i.cursor = 0
 		}
 
@@ -43,22 +48,37 @@ func (i *initial_model) UpdateInitial(msg tea.Msg) (tea.Cmd, state) {
 func (i *initial_model) ViewInitial() string {
 	s := ""
 	s += lipgloss.NewStyle().
-		SetString("Do you want to create a new set of flashcards or use an existing set?").
+		SetString(" What would you like to do?").
 		Foreground(lipgloss.Color("171")).
 		Bold(true).
 		String()
 	s += "\n" // add this separately from previous line to work better with lipgloss
 
-	choices := [2]string{
+	choices := [5]string{
 		lipgloss.NewStyle().
 			SetString("Create a new set of flashcards").
 			Foreground(lipgloss.Color("4")).
 			Italic(i.cursor == 0).
 			String(),
 		lipgloss.NewStyle().
-			SetString("Use an existing set of flashcards").
+			SetString("Add to an existing set of flashcards").
 			Foreground(lipgloss.Color("2")).
 			Italic(i.cursor == 1).
+			String(),
+		lipgloss.NewStyle().
+			SetString("Edit an existing set of flashcards").
+			Foreground(lipgloss.Color("3")).
+			Italic(i.cursor == 2).
+			String(),
+		lipgloss.NewStyle().
+			SetString("Remove from an existing set of flashcards").
+			Foreground(lipgloss.Color("1")).
+			Italic(i.cursor == 3).
+			String(),
+		lipgloss.NewStyle().
+			SetString("Review an existing set of flashcards").
+			Foreground(lipgloss.Color("5")).
+			Italic(i.cursor == 4).
 			String(),
 	}
 
