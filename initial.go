@@ -26,7 +26,7 @@ func (i *initial_model) UpdateInitial(msg tea.Msg) (tea.Cmd, state) {
 			}
 
 		case "down", "j":
-			if i.cursor < 4 {
+			if i.cursor < 1 {
 				i.cursor++
 			}
 
@@ -34,7 +34,7 @@ func (i *initial_model) UpdateInitial(msg tea.Msg) (tea.Cmd, state) {
 			switch i.cursor {
 			case 0:
 				model_state = state(create)
-			case 1, 2, 3, 4:
+			case 1:
 				model_state = state(existing)
 			}
 			i.cursor = 0
@@ -61,24 +61,9 @@ func (i *initial_model) ViewInitial() string {
 			Italic(i.cursor == 0).
 			String(),
 		lipgloss.NewStyle().
-			SetString("Add to an existing set of flashcards").
+			SetString("Use an existing set of flashcards").
 			Foreground(lipgloss.Color("2")).
 			Italic(i.cursor == 1).
-			String(),
-		lipgloss.NewStyle().
-			SetString("Edit an existing set of flashcards").
-			Foreground(lipgloss.Color("3")).
-			Italic(i.cursor == 2).
-			String(),
-		lipgloss.NewStyle().
-			SetString("Remove from an existing set of flashcards").
-			Foreground(lipgloss.Color("1")).
-			Italic(i.cursor == 3).
-			String(),
-		lipgloss.NewStyle().
-			SetString("Review an existing set of flashcards").
-			Foreground(lipgloss.Color("5")).
-			Italic(i.cursor == 4).
 			String(),
 	}
 
