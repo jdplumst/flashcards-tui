@@ -12,6 +12,8 @@ const (
 	initial state = iota
 	create
 	existing
+	review
+	edit
 )
 
 type model struct {
@@ -19,6 +21,8 @@ type model struct {
 	initial  initial_model
 	create   create_model
 	existing existing_model
+	review   review_model
+	edit     edit_model
 }
 
 func (m model) Init() tea.Cmd {
@@ -41,6 +45,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd, s := m.existing.UpdateExisting(msg)
 		m.state = s
 		return m, cmd
+
+	case review:
+		cmd, s := m.review.UpdateReview(msg)
+		m.state = s
+		return m, cmd
+
+	case edit:
+		cmd, s := m.edit.UpdateEdit(msg)
+		m.state = s
+		return m, cmd
+
+	default:
+		m.state = 0
 	}
 
 	return m, nil
@@ -56,6 +73,12 @@ func (m model) View() string {
 
 	case existing:
 		return m.existing.ViewExisting()
+
+	case review:
+		return m.review.ViewReview()
+
+	case edit:
+		return m.edit.ViewEdit()
 	}
 
 	return "Something went wrong, please try again."

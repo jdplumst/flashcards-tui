@@ -108,8 +108,19 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 					e.cursor_prompt = 0
 				}
 
-				// TODO: set the correct model_state
-				// case "enter":
+			case "enter":
+				switch e.cursor_prompt {
+				case 0:
+					model_state = 3
+				case 1:
+					model_state = 4
+				}
+				e.err = nil
+				e.name = ""
+				e.cursor_list = 0
+				e.cursor_prompt = 0
+				return nil, model_state
+
 			}
 		}
 
