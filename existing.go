@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
-	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -208,24 +206,4 @@ func (e *existing_model) ViewExisting() string {
 	}
 
 	return s
-}
-
-func findProjects() ([]string, error) {
-	var a []string
-
-	err := filepath.WalkDir(".", func(s string, d fs.DirEntry, fErr error) error {
-		if fErr != nil {
-			return fErr
-		}
-		if filepath.Ext(d.Name()) == ".db" {
-			a = append(a, s)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return a, nil
 }

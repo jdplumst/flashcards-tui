@@ -1,13 +1,9 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
-	"path/filepath"
 	"regexp"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -139,18 +135,4 @@ func (c *create_model) ViewCreate() string {
 
 	return s
 
-}
-
-func findProject(root, name string) error {
-	return filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
-		if e != nil {
-			return e
-		}
-
-		if strings.TrimSuffix(d.Name(), ".db") == strings.ToLower(name) {
-			return errors.New("Project already exists")
-		}
-
-		return nil
-	})
 }
