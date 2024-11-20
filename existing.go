@@ -19,7 +19,7 @@ type existing_model struct {
 
 var projects, err = findProjects()
 
-func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
+func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state, string) {
 	model_state := state(existing)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "ctrl+c":
-				return tea.Quit, model_state
+				return tea.Quit, model_state, ""
 
 			case "up", "k":
 				switch e.err {
@@ -80,7 +80,7 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "ctrl+c":
-				return tea.Quit, model_state
+				return tea.Quit, model_state, ""
 
 			case "up", "k":
 				switch e.err {
@@ -115,17 +115,18 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state) {
 				case 1:
 					model_state = 4
 				}
+				project := e.name
 				e.err = nil
 				e.name = ""
 				e.cursor_list = 0
 				e.cursor_prompt = 0
-				return nil, model_state
+				return nil, model_state, project
 
 			}
 		}
 
 	}
-	return nil, model_state
+	return nil, model_state, ""
 }
 
 func (e *existing_model) ViewExisting() string {

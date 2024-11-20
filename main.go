@@ -23,6 +23,7 @@ type model struct {
 	existing existing_model
 	review   review_model
 	edit     edit_model
+	project  string
 }
 
 func (m model) Init() tea.Cmd {
@@ -42,8 +43,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case existing:
-		cmd, s := m.existing.UpdateExisting(msg)
+		cmd, s, project := m.existing.UpdateExisting(msg)
 		m.state = s
+		m.project = project
 		return m, cmd
 
 	case review:
@@ -75,9 +77,11 @@ func (m model) View() string {
 		return m.existing.ViewExisting()
 
 	case review:
+		m.review.project = m.project
 		return m.review.ViewReview()
 
 	case edit:
+		m.edit.project = m.project
 		return m.edit.ViewEdit()
 	}
 
