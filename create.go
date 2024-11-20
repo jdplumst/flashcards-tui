@@ -7,6 +7,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type create_model struct {
@@ -39,6 +41,17 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 						_, err := os.Create(c.name + ".db")
 						if err != nil {
 							c.err = fmt.Errorf("Something went wrong. Please try again.")
+						}
+						db, err := sqlx.Connect("sqlite3", c.name+".db")
+						if err != nil {
+							c.err = fmt.Errorf("Error connecting to the database: %v", err)
+						}
+						_, err = db.Exec(`
+							CREATE TABLE IF NOT EXISTS flashcards 
+							(key VARCHAR(255) PRIMARY KEY, 
+							value VARCHAR(255) NOT NULL)`)
+						if err != nil {
+							c.err = fmt.Errorf("Error creating database.")
 						}
 						c.created = true
 					}

@@ -15,13 +15,13 @@ type existing_model struct {
 	err           error
 }
 
-var projects, err = findProjects()
+var projects, existingErr = findProjects()
 
 func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state, string) {
 	model_state := state(existing)
 
-	if err != nil {
-		e.err = err
+	if existingErr != nil {
+		e.err = existingErr
 	}
 
 	switch e.name {
