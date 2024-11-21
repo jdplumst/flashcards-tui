@@ -6,18 +6,13 @@ import (
 )
 
 type edit_model struct {
-	project string
-	err     error
+	project    string
+	flashcards []Flashcard
+	err        error
 }
-
-var flashcards, editErr = getFlashcards("hi")
 
 func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 	model_state := state(edit)
-
-	if editErr != nil {
-		e.err = editErr
-	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -38,7 +33,7 @@ func (e *edit_model) ViewEdit() string {
 		Italic(true).String()
 	s += "\n"
 
-	for _, flashcard := range flashcards {
+	for _, flashcard := range e.flashcards {
 		s += flashcard.Key + ", " + flashcard.Value
 		s += "\n"
 	}

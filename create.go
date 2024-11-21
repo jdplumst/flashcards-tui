@@ -49,7 +49,8 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 						_, err = db.Exec(`
 							CREATE TABLE IF NOT EXISTS flashcards 
 							(key VARCHAR(255) PRIMARY KEY, 
-							value VARCHAR(255) NOT NULL)`)
+							value VARCHAR(255) NOT NULL)
+							`)
 						if err != nil {
 							c.err = fmt.Errorf("Error creating database.")
 						}

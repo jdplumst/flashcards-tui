@@ -43,6 +43,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case existing:
+		m.existing.projects, m.existing.err = findProjects()
 		cmd, s, project := m.existing.UpdateExisting(msg)
 		m.state = s
 		m.project = project
@@ -74,6 +75,7 @@ func (m model) View() string {
 		return m.create.ViewCreate()
 
 	case existing:
+		m.existing.projects, m.existing.err = findProjects()
 		return m.existing.ViewExisting()
 
 	case review:
@@ -82,6 +84,7 @@ func (m model) View() string {
 
 	case edit:
 		m.edit.project = m.project
+		m.edit.flashcards, m.edit.err = getFlashcards(m.project)
 		return m.edit.ViewEdit()
 	}
 

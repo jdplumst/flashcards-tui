@@ -47,14 +47,15 @@ func findProjects() ([]string, error) {
 	return a, nil
 }
 
+// Struct for flashcards in databases
 type Flashcard struct {
 	Key   string
 	Value string
 }
 
+// Returns all flashcards for a given project
 func getFlashcards(project string) ([]Flashcard, error) {
-	projectName := "./" + project + ".db"
-	db, err := sqlx.Connect("sqlite3", projectName)
+	db, err := sqlx.Connect("sqlite3", project)
 	if err != nil {
 		return nil, fmt.Errorf("Error connecting to the database: %v", err)
 	}
@@ -66,13 +67,14 @@ func getFlashcards(project string) ([]Flashcard, error) {
 	_, err = db.Exec(`INSERT INTO flashcards (key, value)
 		VALUES ("test", "value")`)
 	if err != nil {
-		return nil, fmt.Errorf("error 2", err)
+		return nil, fmt.Errorf("error 2: %v", err)
 	}
 
 	var flashcards []Flashcard
-	err = db.Select(&flashcards,
-		`SELECT key, value 
-		FROM flashcards`)
+	err = db.Select(&flashcards, `
+		SELECT key, value 
+		FROM flashcards
+		`)
 	if err != nil {
 		return nil, err
 	}

@@ -10,19 +10,14 @@ import (
 
 type existing_model struct {
 	name          string
+	projects      []string
 	cursor_list   int
 	cursor_prompt int
 	err           error
 }
 
-var projects, existingErr = findProjects()
-
 func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state, string) {
 	model_state := state(existing)
-
-	if existingErr != nil {
-		e.err = existingErr
-	}
 
 	switch e.name {
 	case "":
@@ -49,9 +44,8 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state, string) {
 			case "down", "j":
 				switch e.err {
 				case nil:
-					if e.cursor_list < len(projects)-1 {
+					if e.cursor_list < len(e.projects)-1 {
 						e.cursor_list++
-
 					}
 				default:
 					e.err = nil
@@ -62,7 +56,7 @@ func (e *existing_model) UpdateExisting(msg tea.Msg) (tea.Cmd, state, string) {
 
 			case "enter":
 				e.err = nil
-				e.name = projects[e.cursor_list]
+				e.name = e.projects[e.cursor_list]
 				e.cursor_prompt = 0
 
 			default:
@@ -136,7 +130,7 @@ func (e *existing_model) ViewExisting() string {
 		String()
 	s += "\n"
 
-	for idx, project := range projects {
+	for idx, project := range e.projects {
 		x := "[ ] "
 		if idx == e.cursor_list {
 			x = "[X] "
