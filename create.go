@@ -47,13 +47,14 @@ func (c *create_model) UpdateCreate(msg tea.Msg) (tea.Cmd, state) {
 							c.err = fmt.Errorf("Error connecting to the database: %v", err)
 						}
 						_, err = db.Exec(`
-							CREATE TABLE IF NOT EXISTS flashcards 
-							(key VARCHAR(255) PRIMARY KEY, 
-							value VARCHAR(255) NOT NULL)
-							`)
+							CREATE TABLE IF NOT EXISTS flashcards (
+							key TEXT PRIMARY KEY, 
+							value TEXT NOT NULL
+							)`)
 						if err != nil {
 							c.err = fmt.Errorf("Error creating database.")
 						}
+						db.Close()
 						c.created = true
 					}
 				default:

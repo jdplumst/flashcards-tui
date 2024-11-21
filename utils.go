@@ -60,16 +60,6 @@ func getFlashcards(project string) ([]Flashcard, error) {
 		return nil, fmt.Errorf("Error connecting to the database: %v", err)
 	}
 
-	// TODO: remove this
-	_, _ = db.Exec(`DELETE FROM flashcards`)
-
-	// TODO: remove this
-	_, err = db.Exec(`INSERT INTO flashcards (key, value)
-		VALUES ("test", "value")`)
-	if err != nil {
-		return nil, fmt.Errorf("error 2: %v", err)
-	}
-
 	var flashcards []Flashcard
 	err = db.Select(&flashcards, `
 		SELECT key, value 
@@ -79,5 +69,29 @@ func getFlashcards(project string) ([]Flashcard, error) {
 		return nil, err
 	}
 
+	db.Close()
+
 	return flashcards, nil
+}
+
+// Inserts key and value into db for project
+func addFlashcard(project string, key string, value string) error {
+	db, err := sqlx.Connect("sqlite3", project)
+	if err != nil {
+		return fmt.Errorf("Error connecting to the database: %v", err)
+	}
+
+	_, err = db.Exec(`
+		INSERT INTO flashcards (key, value)
+		VALUES (?, ?)
+		`,
+		key,
+		value)
+	if err != nil {
+		return fmt.Errorf("Error adding flashcard: %v", err)
+	}
+
+	db.Close()
+
+	return nil
 }

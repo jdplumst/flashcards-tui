@@ -55,6 +55,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case edit:
+		m.edit.project = m.project
 		cmd, s := m.edit.UpdateEdit(msg)
 		m.state = s
 		return m, cmd
