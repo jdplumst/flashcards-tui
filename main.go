@@ -85,7 +85,11 @@ func (m model) View() string {
 
 	case edit:
 		m.edit.project = m.project
-		m.edit.flashcards, m.edit.err = getFlashcards(m.project)
+		flashcards, err := getFlashcards(m.project)
+		m.edit.flashcards = flashcards
+		if err != nil && m.edit.err == nil {
+			m.edit.err = err
+		}
 		return m.edit.ViewEdit()
 	}
 

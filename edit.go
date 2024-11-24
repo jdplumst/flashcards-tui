@@ -19,6 +19,7 @@ type edit_model struct {
 	add        add
 	add_key    string
 	add_value  string
+	delete     bool
 	err        error
 }
 
@@ -67,6 +68,12 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				e.add_value += msg.String()
 			}
 
+		case "d":
+			switch e.delete {
+			case false:
+				e.delete = true
+			}
+
 		default:
 			switch e.add {
 			case add(key):
@@ -91,6 +98,29 @@ func (e *edit_model) ViewEdit() string {
 		Foreground(lipgloss.Color("3")).
 		Bold(true).
 		Italic(true).String()
+	s += "\n"
+
+	s += lipgloss.NewStyle().
+		SetString("Press (a) to add a new flashcard").
+		Foreground(lipgloss.Color("3")).
+		Bold(true).
+		String()
+	s += "\n"
+
+	s += lipgloss.NewStyle().
+		SetString("Press (d) to delete a flashcard").
+		Foreground(lipgloss.Color("3")).
+		Bold(true).
+		String()
+	s += "\n"
+
+	s += lipgloss.NewStyle().
+		SetString("Press (e) to edit a flashcard").
+		Foreground(lipgloss.Color("3")).
+		Bold(true).
+		String()
+	s += "\n"
+
 	s += "\n"
 
 	for _, flashcard := range e.flashcards {
@@ -123,6 +153,7 @@ func (e *edit_model) ViewEdit() string {
 	}
 
 	if e.err != nil {
+		s += "\n"
 		s += lipgloss.NewStyle().
 			SetString(e.err.Error()).
 			Foreground(lipgloss.Color("1")).
