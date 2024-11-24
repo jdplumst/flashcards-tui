@@ -76,7 +76,11 @@ func (m model) View() string {
 		return m.create.ViewCreate()
 
 	case existing:
-		m.existing.projects, m.existing.err = findProjects()
+		projects, err := findProjects()
+		m.existing.projects = projects
+		if err != nil && m.existing.err == nil {
+			m.existing.err = err
+		}
 		return m.existing.ViewExisting()
 
 	case review:
