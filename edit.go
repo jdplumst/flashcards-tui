@@ -16,10 +16,11 @@ const (
 type edit_model struct {
 	project    string
 	flashcards []Flashcard
+	cursor     int
 	add        add
 	add_key    string
 	add_value  string
-	delete     bool
+	delete     Flashcard
 	err        error
 }
 
@@ -69,9 +70,68 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 			}
 
 		case "d":
-			switch e.delete {
-			case false:
-				e.delete = true
+			switch e.delete.Key {
+			case "":
+				switch e.add {
+				case add(off):
+					e.delete = e.flashcards[e.cursor]
+				case add(key):
+					if len(msg.String()) == 1 {
+						e.add_key += msg.String()
+					}
+				case add(value):
+					if len(msg.String()) == 1 {
+						e.add_value += msg.String()
+					}
+				}
+			default:
+				switch e.add {
+				case add(key):
+					if len(msg.String()) == 1 {
+						e.add_key += msg.String()
+					}
+				case add(value):
+					if len(msg.String()) == 1 {
+						e.add_value += msg.String()
+					}
+				}
+			}
+
+		case "y":
+			switch e.delete.Key {
+			case "":
+				switch e.add {
+				case add(key):
+					if len(msg.String()) == 1 {
+						e.add_key += msg.String()
+					}
+				case add(value):
+					if len(msg.String()) == 1 {
+						e.add_value += msg.String()
+					}
+				}
+			default:
+				e.err = deleteFlashcard(e.project, e.delete.Key)
+				if e.err == nil {
+					e.delete = Flashcard{Key: "", Value: ""}
+				}
+			}
+
+		case "n":
+			switch e.delete.Key {
+			case "":
+				switch e.add {
+				case add(key):
+					if len(msg.String()) == 1 {
+						e.add_key += msg.String()
+					}
+				case add(value):
+					if len(msg.String()) == 1 {
+						e.add_value += msg.String()
+					}
+				}
+			default:
+				e.delete = Flashcard{Key: "", Value: ""}
 			}
 
 		default:
@@ -149,6 +209,19 @@ func (e *edit_model) ViewEdit() string {
 		s += lipgloss.NewStyle().
 			SetString(e.add_value).
 			Blink(e.add == add(value)).
+			String()
+	}
+
+	if e.delete.Key != "" {
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("Are you sure you want to delete {" + e.delete.Key + ", " + e.delete.Value + "}?").
+			Foreground(lipgloss.Color("1")).
+			String()
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("Press (y) for yes, (n) for no").
+			Foreground(lipgloss.Color("1")).
 			String()
 	}
 

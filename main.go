@@ -56,6 +56,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case edit:
 		m.edit.project = m.project
+		flashcards, err := getFlashcards(m.project)
+		m.edit.flashcards = flashcards
+		if err != nil && m.edit.err == nil {
+			m.edit.err = err
+		}
 		cmd, s := m.edit.UpdateEdit(msg)
 		m.state = s
 		return m, cmd

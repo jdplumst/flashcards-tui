@@ -95,3 +95,24 @@ func addFlashcard(project string, key string, value string) error {
 
 	return nil
 }
+
+// Deletes flashcard with key from project
+func deleteFlashcard(project string, key string) error {
+	db, err := sqlx.Connect("sqlite3", project)
+	if err != nil {
+		return fmt.Errorf("Error connecting to the database: %v", err)
+	}
+
+	_, err = db.Exec(`
+		DELETE FROM flashcards
+		WHERE key = ?
+		`,
+		key)
+	if err != nil {
+		return fmt.Errorf("Error deleting flashcard: %v", err)
+	}
+
+	db.Close()
+
+	return nil
+}
