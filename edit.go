@@ -33,6 +33,38 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 		case "ctrl+c":
 			return tea.Quit, 0
 
+		case "up", "k":
+			switch e.add {
+			case add(off):
+				if e.cursor > 0 {
+					e.cursor--
+				}
+			case add(key):
+				if len(msg.String()) == 1 {
+					e.add_key += msg.String()
+				}
+			case add(value):
+				if len(msg.String()) == 1 {
+					e.add_value += msg.String()
+				}
+			}
+
+		case "down", "j":
+			switch e.add {
+			case add(off):
+				if e.cursor < len(e.flashcards)-1 {
+					e.cursor++
+				}
+			case add(key):
+				if len(msg.String()) == 1 {
+					e.add_key += msg.String()
+				}
+			case add(value):
+				if len(msg.String()) == 1 {
+					e.add_value += msg.String()
+				}
+			}
+
 		case "enter":
 			switch e.add {
 			case add(key):
@@ -183,8 +215,12 @@ func (e *edit_model) ViewEdit() string {
 
 	s += "\n"
 
-	for _, flashcard := range e.flashcards {
-		s += flashcard.Key + ", " + flashcard.Value
+	for idx, flashcard := range e.flashcards {
+		cursor := "  "
+		if e.cursor == idx {
+			cursor = "> "
+		}
+		s += cursor + flashcard.Key + ", " + flashcard.Value
 		s += "\n"
 	}
 
