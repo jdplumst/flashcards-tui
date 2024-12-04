@@ -75,7 +75,7 @@ func getFlashcards(project string) ([]Flashcard, error) {
 }
 
 // Inserts key and value into db for project
-func addFlashcard(project string, key string, value string) error {
+func addFlashcard(project, key, value string) error {
 	db, err := sqlx.Connect("sqlite3", project)
 	if err != nil {
 		return fmt.Errorf("Error connecting to the database: %v", err)
@@ -97,7 +97,7 @@ func addFlashcard(project string, key string, value string) error {
 }
 
 // Deletes flashcard with key from project
-func deleteFlashcard(project string, key string) error {
+func deleteFlashcard(project, key string) error {
 	db, err := sqlx.Connect("sqlite3", project)
 	if err != nil {
 		return fmt.Errorf("Error connecting to the database: %v", err)
@@ -110,6 +110,30 @@ func deleteFlashcard(project string, key string) error {
 		key)
 	if err != nil {
 		return fmt.Errorf("Error deleting flashcard: %v", err)
+	}
+
+	db.Close()
+
+	return nil
+}
+
+// Edits flashcard with key from project with new_key and new_value
+func editFlashcard(project, key, new_key, new_value string) error {
+	db, err := sqlx.Connect("sqlite3", project)
+	if err != nil {
+		return fmt.Errorf("Error connecting to the database: %v", err)
+	}
+
+	_, err = db.Exec(`
+		UPDATE flashcards
+		SET key = ?, value = ?
+		WHERE key = ?
+		`,
+		new_key,
+		new_value,
+		key)
+	if err != nil {
+		return fmt.Errorf("Error editing flashcard: %v", err)
 	}
 
 	db.Close()

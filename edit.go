@@ -10,7 +10,7 @@ type mode int
 const (
 	off mode = iota
 	adding
-	editting
+	editing
 )
 
 type prompt int
@@ -49,7 +49,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				}
 			default:
 				switch e.prompt {
-
 				case prompt(key):
 					if len(msg.String()) == 1 {
 						e.key += msg.String()
@@ -69,7 +68,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				}
 			default:
 				switch e.prompt {
-
 				case prompt(key):
 					if len(msg.String()) == 1 {
 						e.key += msg.String()
@@ -85,12 +83,26 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 			switch e.mode {
 			case mode(off):
 				break
-			default:
+			case mode(adding):
 				switch e.prompt {
 				case prompt(key):
 					e.prompt = prompt(value)
 				case prompt(value):
 					e.err = addFlashcard(e.project, e.key, e.value)
+					if e.err == nil {
+						e.flashcards, e.err = getFlashcards(e.project)
+						e.mode = mode(off)
+						e.prompt = prompt(key)
+						e.key = ""
+						e.value = ""
+					}
+				}
+			case mode(editing):
+				switch e.prompt {
+				case prompt(key):
+					e.prompt = prompt(value)
+				case prompt(value):
+					e.err = editFlashcard(e.project, e.flashcards[e.cursor].Key, e.key, e.value)
 					if e.err == nil {
 						e.flashcards, e.err = getFlashcards(e.project)
 						e.mode = mode(off)
@@ -107,7 +119,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				break
 			default:
 				switch e.prompt {
-
 				case prompt(key):
 					if len(e.key) > 0 {
 						e.key = e.key[:len(e.key)-1]
@@ -126,7 +137,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				e.prompt = prompt(key)
 			case mode(adding):
 				switch e.prompt {
-
 				case prompt(key):
 					e.key += msg.String()
 				case prompt(value):
@@ -142,7 +152,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 					e.delete = e.flashcards[e.cursor]
 				default:
 					switch e.prompt {
-
 					case prompt(key):
 						if len(msg.String()) == 1 {
 							e.key += msg.String()
@@ -155,6 +164,22 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				}
 			}
 
+		case "e":
+			switch e.mode {
+			case mode(off):
+				e.mode = mode(editing)
+				e.prompt = prompt(key)
+				e.key = e.flashcards[e.cursor].Key
+				e.value = e.flashcards[e.cursor].Value
+			case mode(editing):
+				switch e.prompt {
+				case prompt(key):
+					e.key += msg.String()
+				case prompt(value):
+					e.value += msg.String()
+				}
+			}
+
 		case "y":
 			switch e.delete.Key {
 			case "":
@@ -163,7 +188,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 					break
 				default:
 					switch e.prompt {
-
 					case prompt(key):
 						if len(msg.String()) == 1 {
 							e.key += msg.String()
@@ -189,7 +213,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 					break
 				default:
 					switch e.prompt {
-
 					case prompt(key):
 						if len(msg.String()) == 1 {
 							e.key += msg.String()
@@ -210,7 +233,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				break
 			default:
 				switch e.prompt {
-
 				case prompt(key):
 					if len(msg.String()) == 1 {
 						e.key += msg.String()
@@ -220,7 +242,6 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 						e.value += msg.String()
 					}
 				}
-
 			}
 		}
 	}
@@ -271,9 +292,17 @@ func (e *edit_model) ViewEdit() string {
 	if e.mode == mode(adding) {
 		s += "\n"
 		s += lipgloss.NewStyle().
-			SetString("You are adding a new flashcard.").
+			SetString("you are adding a new flashcard.").
 			Foreground(lipgloss.Color("3")).
 			Bold(true).String()
+	} else if e.mode == mode(editing) {
+		s += "\n"
+		s += lipgloss.NewStyle().
+			SetString("you are adding a new flashcard.").
+			Foreground(lipgloss.Color("3")).
+			Bold(true).String()
+	}
+	if e.mode != mode(off) {
 		s += "\n"
 		s += lipgloss.NewStyle().
 			SetString("Key: ").
