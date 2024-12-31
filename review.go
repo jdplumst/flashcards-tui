@@ -87,6 +87,20 @@ func (r *review_model) UpdateReview(msg tea.Msg) (tea.Cmd, state) {
 					}
 				}
 			}
+
+		case "backspace":
+			if r.err != nil {
+				r.err = nil
+				r.index = 0
+				r.guess = ""
+				r.reviewcards = nil
+				r.phase = phase(start)
+			} else {
+				if len(r.guess) > 0 {
+					r.guess = r.guess[:len(r.guess)-1]
+				}
+			}
+
 		default:
 			if r.err != nil {
 				r.err = nil
