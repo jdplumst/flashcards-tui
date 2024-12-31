@@ -135,7 +135,7 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 			case mode(off):
 				e.mode = mode(adding)
 				e.prompt = prompt(key)
-			case mode(adding):
+			default:
 				switch e.prompt {
 				case prompt(key):
 					e.key += msg.String()
@@ -171,7 +171,7 @@ func (e *edit_model) UpdateEdit(msg tea.Msg) (tea.Cmd, state) {
 				e.prompt = prompt(key)
 				e.key = e.flashcards[e.cursor].Key
 				e.value = e.flashcards[e.cursor].Value
-			case mode(editing):
+			default:
 				switch e.prompt {
 				case prompt(key):
 					e.key += msg.String()
