@@ -1,7 +1,7 @@
 # Flashcards TUI
 
 ## Project Description
-This is a flashcards terminal UI application that allows users to create, view, and delete flashcards. The flashcards are stored in a SQLite database. The application is written in Go and uses the [bubble tea framework](https://github.com/charmbracelet/bubbletea) for the terminal UI.
+This is a flashcards terminal UI application that allows users to create, view, and delete flashcards. The flashcards are stored in SQLite databases. The application is written in Go and uses the [bubble tea framework](https://github.com/charmbracelet/bubbletea) for the terminal UI.
 
 ## How to Run
 
