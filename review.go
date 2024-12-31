@@ -133,7 +133,7 @@ func (r *review_model) ViewReview() string {
 		case correct:
 			s += " " + r.reviewcards[i].guess + " ✅"
 		case incorrect:
-			s += " " + r.reviewcards[i].guess + " ❌"
+			s += " " + r.reviewcards[i].guess + " ❌ " + r.reviewcards[i].flashcard.Value
 		}
 		s += "\n"
 	}
