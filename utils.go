@@ -74,6 +74,28 @@ func getFlashcards(project string) ([]Flashcard, error) {
 	return flashcards, nil
 }
 
+// Returns all flashcards for a given project in random order
+func getReview(project string) ([]Flashcard, error) {
+	db, err := sqlx.Connect("sqlite3", project)
+	if err != nil {
+		return nil, fmt.Errorf("Error connecting to the database: %v", err)
+	}
+
+	var flashcards []Flashcard
+	err = db.Select(&flashcards, `
+		SELECT key, value 
+		FROM flashcards
+		ORDER BY RANDOM()
+		`)
+	if err != nil {
+		return nil, err
+	}
+
+	db.Close()
+
+	return flashcards, nil
+}
+
 // Inserts key and value into db for project
 func addFlashcard(project, key, value string) error {
 	db, err := sqlx.Connect("sqlite3", project)

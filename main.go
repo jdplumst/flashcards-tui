@@ -50,6 +50,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case review:
+		m.review.project = m.project
 		cmd, s := m.review.UpdateReview(msg)
 		m.state = s
 		return m, cmd
